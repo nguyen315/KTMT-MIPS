@@ -145,3 +145,49 @@ isPrime:
 FinishProcedure:
 li $v0, 10
 syscall
+
+
+# Tinh Tong cac phan tu trong mang
+
+.data
+arrInt: .word 1 2 3 4 5
+strSayHi: .ascii "Chao anh em Bro Pro!\n"
+strResult: .ascii "Ahihi ket qua la: "
+.text
+.globl main
+main:
+la $a0, strSayHi
+li $v0, 4
+syscall
+j init
+J finish
+
+init:
+li $v0, 10
+li $a1, 5 # $a1 = so phan tu trong mang
+subi $a1, $a1, 1
+la $s0, arrInt
+li $a0, 0
+li $s1, 0 # Bien dem
+j sumArr
+
+
+sumArr: # Tong cac gia tri trong mang arrInt
+bgt $s1, $a1, output
+lw $t0, ($s0)
+add $a0, $a0, $t0
+addi $s0, $s0, 4
+addi $s1, $s1, 1
+j sumArr
+
+output:
+move $t0, $a0
+la $a0, strResult
+li $v0, 4
+move $a0, $t0
+li $v0, 1
+syscall
+
+finish:
+li $v0, 10
+syscall
