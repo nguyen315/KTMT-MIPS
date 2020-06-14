@@ -8,6 +8,7 @@ strNhapPhanTu_: .asciiz "] = "
 strXuatArray: .asciiz "array: "
 strDauPhay: .asciiz ", "
 
+
 .text
 main:
 ############# Bat dau phan nhap n
@@ -74,17 +75,12 @@ NhapMangNPhanTu:
 
 ############# Ket thuc phan nhap mang
 
-
 # Main
 jal LietKeSNT
 j FinishProcedure
 
+
 # ---------- Ket thuc ham chinh
-
-
-
-
-
 
 
 
@@ -210,5 +206,3 @@ isPrime:
 FinishProcedure:
 li $v0, 10
 syscall
-
-
