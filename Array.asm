@@ -1,12 +1,14 @@
 .data
 array: .space 1024
 n: .word 0 # SL phan tu
+max: .word 0
 
 strNhapN: .asciiz "Nhap so luong phan tu n(n>0): "
 strNhapPhanTu: .asciiz "array["
 strNhapPhanTu_: .asciiz "] = "
 strXuatArray: .asciiz "array: "
 strDauPhay: .asciiz ", "
+strMax: .asciiz "Max: "
 
 
 .text
@@ -137,6 +139,42 @@ XuatArray:
 
 
 
+
+############# Tim Max
+# $a1 luu n, $a2 luu dia chi array[0]
+# $v0 luu gia tri Max
+TimMax:
+	# Gan $v0 = array[0]
+	lw $v0, ($a2)
+	
+	# $a3 la bien dem
+	li $a3, 0
+	
+	LoopTimMax:
+
+		# neu array[x] <= $v0 thi nhay toi TiepTucTimMax ma khong thay doi gia tri max
+		lw $a0, ($a2)
+		ble $a0, $v0, TiepTucTimMax
+		
+		# Thay doi gia tri max
+		lw $v0, ($a2)
+
+		TiepTucTimMax:
+			# Thay doi gia tri bien dem va tang gia tri cua array
+			addi $a2, $a2, 4
+			addi $a3, $a3, 1 
+			
+			blt $a3, $a1, LoopTimMax
+			
+	# Xong het thi quay lai chuong trinh chinh
+	# max duoc luu trong $v0 khi return
+	
+	jr $ra			
+
+############# Ket thuc tim max
+
+
+
 ############# Liet ke phan tu la so nguyen to
 
 LietKeSNT:
@@ -144,6 +182,7 @@ LietKeSNT:
 	li $t0, 0
 	la $t5, array
 	move $t6, $ra
+
 
 	# --- Duyet tung phan tu trong mang
 	Loop:
