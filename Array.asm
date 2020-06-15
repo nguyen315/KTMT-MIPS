@@ -2,10 +2,13 @@
 array: .space 1024
 n: .word 0 # SL phan tu
 
+strKQTong: .asciiz "Ket qua tong cac phan tu trong mang la: "
 strNhapN: .asciiz "Nhap so luong phan tu n(n>0): "
 strNhapPhanTu: .asciiz "array["
 strNhapPhanTu_: .asciiz "] = "
 strDauPhay: .asciiz ", "
+strNhapX: .asciiz "Nhap vao gia tri cua x can tim: "
+strViTriX: .asciiz "X nam o vi tri thu: "
 
 
 .text
@@ -72,7 +75,8 @@ NhapMangNPhanTu:
 ############# Ket thuc phan nhap mang
 
 # Main
-jal LietKeSNT
+#jal LietKeSNT
+jal findX
 j FinishProcedure
 
 ############# Liet ke phan tu la so nguyen to
@@ -149,45 +153,62 @@ syscall
 
 # Tinh Tong cac phan tu trong mang
 
-.data
-arrInt: .word 1 2 3 4 5
-strSayHi: .ascii "Chao anh em Bro Pro!\n"
-strResult: .ascii "Ahihi ket qua la: "
-.text
-.globl main
-main:
-la $a0, strSayHi
-li $v0, 4
-syscall
-j init
-J finish
-
-init:
-li $v0, 10
-li $a1, 5 # $a1 = so phan tu trong mang
-subi $a1, $a1, 1
-la $s0, arrInt
-li $a0, 0
-li $s1, 0 # Bien dem
-j sumArr
+sumArr:
+	li $v0, 10
+	move $a1, $s2 # $a1 = so phan tu trong mang
+	la $s0, array
+	li $a0, 0
+	li $s1, 0 # Bien dem
+	j sumLoop
 
 
-sumArr: # Tong cac gia tri trong mang arrInt
-bgt $s1, $a1, output
-lw $t0, ($s0)
-add $a0, $a0, $t0
-addi $s0, $s0, 4
-addi $s1, $s1, 1
-j sumArr
+sumLoop: # Tong cac gia tri trong mang arrInt
+	beq $s1, $a1, resultSum
+	lw $t0, ($s0)
+	add $a0, $a0, $t0
+	addi $s0, $s0, 4
+	addi $s1, $s1, 1
+	j sumLoop
 
-output:
-move $t0, $a0
-la $a0, strResult
-li $v0, 4
-move $a0, $t0
-li $v0, 1
-syscall
+resultSum:
+	move $t0, $a0
+	la $a0, strKQTong
+	li $v0, 4
+	syscall
+	move $a0, $t0
+	li $v0, 1
+	syscall
 
-finish:
-li $v0, 10
-syscall
+findX:
+	la $s0, array
+	move $s1, $s2 # So phan tu
+	la $a0, strNhapX
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	move $t0, $v0
+	li $t1, 0 # Bien dem
+	j findLoop
+findLoop:
+	beq $t1, $s2, N_A # Khong co x trong mang
+	lw $t2, ($s0)
+	beq $t0, $t2, Pos # Co x trong mang => tra ve vi tri cua x
+	addi $s0, $s0, 4
+	addi $t1, $t1, 1
+	j findLoop
+Pos:
+	addi $t1, $t1, 1
+	la $a0, strViTriX
+	li $v0, 4
+	syscall
+	move $a0, $t1
+	li $v0, 1
+	syscall
+	jr $ra
+N_A:
+	li $a0, -1
+	li $v0, 1
+	syscall
+	jr $ra
+	
