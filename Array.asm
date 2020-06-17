@@ -1,14 +1,18 @@
 .data
 array: .space 1024
 n: .word 0 # SL phan tu
+max: .word 0
 
 strKQTong: .asciiz "Ket qua tong cac phan tu trong mang la: "
 strNhapN: .asciiz "Nhap so luong phan tu n(n>0): "
 strNhapPhanTu: .asciiz "array["
 strNhapPhanTu_: .asciiz "] = "
+strXuatArray: .asciiz "array: "
 strDauPhay: .asciiz ", "
 strNhapX: .asciiz "Nhap vao gia tri cua x can tim: "
 strViTriX: .asciiz "X nam o vi tri thu: "
+strMax: .asciiz "Max: "
+
 
 
 .text
@@ -65,12 +69,15 @@ NhapMangNPhanTu:
 	sw $v0, ($s1)
 
 	
-	# Thay doi gia tri cac bien dem
+	# Thay doi gia tri bien dem va tang gia tri cua array
 	addi $s1, $s1, 4
 	addi $s3, $s3, 1
 
 
 	blt $s3, $s2, NhapMangNPhanTu
+
+
+
 
 ############# Ket thuc phan nhap mang
 
@@ -79,14 +86,108 @@ NhapMangNPhanTu:
 jal findX
 j FinishProcedure
 
+
+# ---------- Ket thuc ham chinh
+
+
+
+
+
+
+
+
+
+################# FUNCTION #################
+
+
+############# Xuat phan tu
+# $a1 luu n, $a2 luu dia chi array[0]
+
+XuatArray:
+	
+	la $a0, strXuatArray
+	li $v0, 4
+	syscall	
+
+	# a3 la bien dem
+	li $a3, 0
+
+	LoopXuatArray:
+		# Dua so trong arr vao $a0 de xuat
+		lw $a0, ($a2)
+	
+		li $v0, 1
+		syscall
+
+		# Thay doi gia tri bien dem va tang gia tri cua array
+		addi $a2, $a2, 4
+		addi $a3, $a3, 1 
+
+		# Xuat dau phay cho de nhin
+		# Neu la so cuoi thi khong xuat dau phay
+		blt $a3, $1, XuatDauPhay
+		j TiepTucLoop
+		XuatDauPhay:
+			la $a0, strDauPhay
+			li $v0, 4
+			syscall
+
+		
+		TiepTucLoop:
+			blt $a3, $a1, LoopXuatArray
+	
+
+	# Xong het thi return lai chuong trinh chinh
+	jr $ra
+
+############# Ket thuc xuat phan tu
+
+
+
+
+############# Tim Max
+# $a1 luu n, $a2 luu dia chi array[0]
+# $v0 luu gia tri Max
+TimMax:
+	# Gan $v0 = array[0]
+	lw $v0, ($a2)
+	
+	# $a3 la bien dem
+	li $a3, 0
+	
+	LoopTimMax:
+
+		# neu array[x] <= $v0 thi nhay toi TiepTucTimMax ma khong thay doi gia tri max
+		lw $a0, ($a2)
+		ble $a0, $v0, TiepTucTimMax
+		
+		# Thay doi gia tri max
+		lw $v0, ($a2)
+
+		TiepTucTimMax:
+			# Thay doi gia tri bien dem va tang gia tri cua array
+			addi $a2, $a2, 4
+			addi $a3, $a3, 1 
+			
+			blt $a3, $a1, LoopTimMax
+			
+	# Xong het thi quay lai chuong trinh chinh
+	# max duoc luu trong $v0 khi return
+	
+	jr $ra			
+
+############# Ket thuc tim max
+
+
+
 ############# Liet ke phan tu la so nguyen to
 
-#### Ham Chinh
 LietKeSNT:
 	# Khoi tao bien dem o $t0
 	li $t0, 0
 	la $t5, array
 	move $t6, $ra
+
 
 	# --- Duyet tung phan tu trong mang
 	Loop:
@@ -116,8 +217,8 @@ LietKeSNT:
 	# ket thuc ham
 	move $ra, $t6
 	jr $ra
+############# Ket thucc liet ke phan tu la so nguyen to
 
-# ---------- Ket thuc ham chinh
 
 #### Kiem tra mot so la so nguyen to
 isPrime:
@@ -143,19 +244,18 @@ isPrime:
 		li $v0, 0
 		jr $ra
 
-############# Ket thucc liet ke phan tu la so nguyen to
+#### Ket thuc kiem tra so nguyen to
 
-# Ket thuc chuong trinh
+#### Ket thuc chuong trinh
 FinishProcedure:
 li $v0, 10
 syscall
 
 
-# Tinh Tong cac phan tu trong mang
+########### Tinh Tong cac phan tu trong mang
 
 sumArr:
-	li $v0, 10
-	move $a1, $s2 # $a1 = so phan tu trong mang
+	lw $a1, n # $a1 = so phan tu trong mang
 	la $s0, array
 	li $a0, 0
 	li $s1, 0 # Bien dem
@@ -178,10 +278,11 @@ resultSum:
 	move $a0, $t0
 	li $v0, 1
 	syscall
+  jr $ra
 
 findX:
 	la $s0, array
-	move $s1, $s2 # So phan tu
+	lw $s1, n # So phan tu
 	la $a0, strNhapX
 	li $v0, 4
 	syscall
@@ -191,7 +292,7 @@ findX:
 	li $t1, 0 # Bien dem
 	j findLoop
 findLoop:
-	beq $t1, $s2, N_A # Khong co x trong mang
+	beq $t1, $s1, N_A # Khong co x trong mang
 	lw $t2, ($s0)
 	beq $t0, $t2, Pos # Co x trong mang => tra ve vi tri cua x
 	addi $s0, $s0, 4
@@ -211,4 +312,3 @@ N_A:
 	li $v0, 1
 	syscall
 	jr $ra
-	
