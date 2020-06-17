@@ -3,12 +3,16 @@ array: .space 1024
 n: .word 0 # SL phan tu
 max: .word 0
 
+strKQTong: .asciiz "Ket qua tong cac phan tu trong mang la: "
 strNhapN: .asciiz "Nhap so luong phan tu n(n>0): "
 strNhapPhanTu: .asciiz "array["
 strNhapPhanTu_: .asciiz "] = "
 strXuatArray: .asciiz "array: "
 strDauPhay: .asciiz ", "
+strNhapX: .asciiz "Nhap vao gia tri cua x can tim: "
+strViTriX: .asciiz "X nam o vi tri thu: "
 strMax: .asciiz "Max: "
+
 
 
 .text
@@ -78,7 +82,8 @@ NhapMangNPhanTu:
 ############# Ket thuc phan nhap mang
 
 # Main
-jal LietKeSNT
+#jal LietKeSNT
+jal findX
 j FinishProcedure
 
 
@@ -245,3 +250,65 @@ isPrime:
 FinishProcedure:
 li $v0, 10
 syscall
+
+
+########### Tinh Tong cac phan tu trong mang
+
+sumArr:
+	lw $a1, n # $a1 = so phan tu trong mang
+	la $s0, array
+	li $a0, 0
+	li $s1, 0 # Bien dem
+	j sumLoop
+
+
+sumLoop: # Tong cac gia tri trong mang arrInt
+	beq $s1, $a1, resultSum
+	lw $t0, ($s0)
+	add $a0, $a0, $t0
+	addi $s0, $s0, 4
+	addi $s1, $s1, 1
+	j sumLoop
+
+resultSum:
+	move $t0, $a0
+	la $a0, strKQTong
+	li $v0, 4
+	syscall
+	move $a0, $t0
+	li $v0, 1
+	syscall
+  jr $ra
+
+findX:
+	la $s0, array
+	lw $s1, n # So phan tu
+	la $a0, strNhapX
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	move $t0, $v0
+	li $t1, 0 # Bien dem
+	j findLoop
+findLoop:
+	beq $t1, $s1, N_A # Khong co x trong mang
+	lw $t2, ($s0)
+	beq $t0, $t2, Pos # Co x trong mang => tra ve vi tri cua x
+	addi $s0, $s0, 4
+	addi $t1, $t1, 1
+	j findLoop
+Pos:
+	addi $t1, $t1, 1
+	la $a0, strViTriX
+	li $v0, 4
+	syscall
+	move $a0, $t1
+	li $v0, 1
+	syscall
+	jr $ra
+N_A:
+	li $a0, -1
+	li $v0, 1
+	syscall
+	jr $ra
