@@ -2,16 +2,22 @@
 array: .space 1024
 n: .word 0 # SL phan tu
 max: .word 0
+cn: .word 0 # Chuc nang chuong trinh
 
 strKQTong: .asciiz "Ket qua tong cac phan tu trong mang la: "
 strNhapN: .asciiz "Nhap so luong phan tu n(n>0): "
 strNhapPhanTu: .asciiz "array["
 strNhapPhanTu_: .asciiz "] = "
-strXuatArray: .asciiz "array: "
+strXuatArray: .asciiz "Array: "
 strDauPhay: .asciiz ", "
 strNhapX: .asciiz "Nhap vao gia tri cua x can tim: "
 strViTriX: .asciiz "X nam o vi tri thu: "
 strMax: .asciiz "Max: "
+
+strChucNang: .asciiz "\n----------------------------\n1. Xuat ra cac phan tu.\n2. Tinh tong cac phan tu.\n3. Liet ke cac phan tu la so nguyen to.\n4. Tim max.\n5. Tim phan tu co gia tri x do nguoi dung nhap vao.\n6. Thoat chuong trinh.\n"
+strChonChucNang: .asciiz "!! Moi chon chuc nang: "
+
+strTatChuongTrinh: .asciiz "!!!!Chuong trinh dang tat!!!!\n"
 
 
 
@@ -81,13 +87,60 @@ NhapMangNPhanTu:
 
 ############# Ket thuc phan nhap mang
 
-# Main
-#jal LietKeSNT
-jal findX
-j FinishProcedure
+######## Chuong trinh chinh ########
+ChuongTrinhChinh:
+	# In ra bang chon chuc nang
+	la $a0, strChucNang
+	li $v0, 4
+	syscall
+
+	# Chon chuc nang
+	ChonChucNang:
+		la $a0, strChonChucNang
+		li $v0, 4
+		syscall
+
+		la $v0, 5
+		syscall
+	
+		# Kiem tra nhap vao co >=1 va <=6 khong
+		blez $v0, ChonChucNang
+		bgt $v0, 6, ChonChucNang
+	sw $v0, cn
+
+	# Thuc hien chuc nang
+	lw $t7, cn
+	beq $t7, 1, CNXuatArray
+	beq $t7, 2, CNsumArr
+	beq $t7, 3, CNLietKeSNT
+	beq $t7, 4, CNTimMax
+	beq $t7, 5, CNfindX
+	beq $t7, 6, CNFinishProcedure
+
+	CNXuatArray:
+		jal XuatArray
+		j ChuongTrinhChinh
+	CNsumArr:
+		jal sumArr
+		j ChuongTrinhChinh
+	CNLietKeSNT:
+		jal LietKeSNT
+		j ChuongTrinhChinh
+	CNTimMax:
+		jal TimMax
+		j ChuongTrinhChinh
+	CNfindX:
+		jal findX
+		j ChuongTrinhChinh
+	CNFinishProcedure:
+		la $a0, strTatChuongTrinh
+		li $v0, 4
+		syscall
+		j FinishProcedure
+	
 
 
-# ---------- Ket thuc ham chinh
+######## Ket thuc ham chinh ########
 
 
 
@@ -101,10 +154,14 @@ j FinishProcedure
 
 
 ############# Xuat phan tu
-# $a1 luu n, $a2 luu dia chi array[0]
+
 
 XuatArray:
+	# $a1 luu n, $a2 luu dia chi array[0]
+	lw $a1, n
+	la $a2, array
 	
+
 	la $a0, strXuatArray
 	li $v0, 4
 	syscall	
@@ -125,7 +182,7 @@ XuatArray:
 
 		# Xuat dau phay cho de nhin
 		# Neu la so cuoi thi khong xuat dau phay
-		blt $a3, $1, XuatDauPhay
+		blt $a3, $a1, XuatDauPhay
 		j TiepTucLoop
 		XuatDauPhay:
 			la $a0, strDauPhay
@@ -146,9 +203,13 @@ XuatArray:
 
 
 ############# Tim Max
-# $a1 luu n, $a2 luu dia chi array[0]
-# $v0 luu gia tri Max
+
+# $v0 tra ve gia tri Max
 TimMax:
+	# $a1 luu n, $a2 luu dia chi array[0]
+	lw $a1, n
+	la $a2, array
+	
 	# Gan $v0 = array[0]
 	lw $v0, ($a2)
 	
@@ -171,9 +232,20 @@ TimMax:
 			
 			blt $a3, $a1, LoopTimMax
 			
+	
+	# Xuat ket qua max
+	sw $v0, max
+	
+	la $a0, strMax
+	li $v0, 4
+	syscall
+
+	lw $a0, max
+	li $v0, 1
+	syscall
+	
 	# Xong het thi quay lai chuong trinh chinh
 	# max duoc luu trong $v0 khi return
-	
 	jr $ra			
 
 ############# Ket thuc tim max
@@ -253,7 +325,6 @@ syscall
 
 
 ########### Tinh Tong cac phan tu trong mang
-
 sumArr:
 	lw $a1, n # $a1 = so phan tu trong mang
 	la $s0, array
@@ -278,7 +349,7 @@ resultSum:
 	move $a0, $t0
 	li $v0, 1
 	syscall
-  jr $ra
+  	jr $ra
 
 findX:
 	la $s0, array
