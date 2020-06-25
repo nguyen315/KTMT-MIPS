@@ -19,8 +19,6 @@ strChonChucNang: .asciiz "!! Moi chon chuc nang: "
 
 strTatChuongTrinh: .asciiz "!!!!Chuong trinh dang tat!!!!\n"
 
-
-
 .text
 main:
 ############# Bat dau phan nhap n
@@ -34,10 +32,7 @@ NhapN:
 	blez $v0, NhapN
 	
 sw $v0, n
-
 ############# Ket thuc phan nhap n
-
-
 
 ############# Bat dau phan nhap mang
 
@@ -45,7 +40,6 @@ sw $v0, n
 lw $s2, n
 # $s3 la bien dem 
 li $s3, 0
-
 # Load dia chi array[0] vao $s1
 la $s1, array
 
@@ -64,27 +58,16 @@ NhapMangNPhanTu:
 	li $v0, 4
 	syscall
 	###
-
-
-	
 	# syscall 5 de nhap int
 	li $v0,5
 	syscall
 
 	# Luu vao array tuong ung
 	sw $v0, ($s1)
-
-	
 	# Thay doi gia tri bien dem va tang gia tri cua array
 	addi $s1, $s1, 4
 	addi $s3, $s3, 1
-
-
 	blt $s3, $s2, NhapMangNPhanTu
-
-
-
-
 ############# Ket thuc phan nhap mang
 
 ######## Chuong trinh chinh ########
@@ -160,28 +143,24 @@ XuatArray:
 	# $a1 luu n, $a2 luu dia chi array[0]
 	lw $a1, n
 	la $a2, array
-	
-
 	la $a0, strXuatArray
 	li $v0, 4
 	syscall	
 
 	# a3 la bien dem
 	li $a3, 0
-
 	LoopXuatArray:
 		# Dua so trong arr vao $a0 de xuat
 		lw $a0, ($a2)
-	
 		li $v0, 1
 		syscall
 
 		# Thay doi gia tri bien dem va tang gia tri cua array
 		addi $a2, $a2, 4
 		addi $a3, $a3, 1 
-
 		# Xuat dau phay cho de nhin
 		# Neu la so cuoi thi khong xuat dau phay
+
 		blt $a3, $a1, XuatDauPhay
 		j TiepTucLoop
 		XuatDauPhay:
@@ -189,14 +168,10 @@ XuatArray:
 			li $v0, 4
 			syscall
 
-		
 		TiepTucLoop:
 			blt $a3, $a1, LoopXuatArray
-	
-
 	# Xong het thi return lai chuong trinh chinh
 	jr $ra
-
 ############# Ket thuc xuat phan tu
 
 
@@ -350,7 +325,7 @@ resultSum:
 	li $v0, 1
 	syscall
   	jr $ra
-
+# Tim vi tri cua gia tri x do nguoi dung nhap vao
 findX:
 	la $s0, array
 	lw $s1, n # So phan tu
